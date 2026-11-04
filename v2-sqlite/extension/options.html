@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>网页用户备注助手 · 设置</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 0 20px;
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: #f8fafc;
+      font-size: 14px;
+    }
+    h1 { font-size: 18px; margin-bottom: 6px; }
+    p.hint { color: var(--muted); font-size: 12px; line-height: 1.6; }
+    label { display: block; margin: 18px 0 6px; font-size: 13px; color: var(--muted); }
+    input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+    }
+    input:focus { outline: none; border-color: var(--blue); }
+    .row { display: flex; gap: 10px; margin-top: 14px; }
+    button {
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+    }
+    button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    button:hover { opacity: 0.92; }
+    #msg { margin-top: 14px; font-size: 13px; min-height: 18px; }
+    #msg.ok { color: #15803d; }
+    #msg.error { color: #b91c1c; }
+    code {
+      background: #e2e8f0;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>网页用户备注助手 · 设置</h1>
+  <p class="hint">
+    数据保存在本地 Python + SQLite 后端。启动方式：<br>
+    <code>python backend/app.py</code><br>
+    数据库文件：<code>backend/data/zhihu-tagger.db</code>，可用 DB Browser / DBeaver 直接打开管理。
+  </p>
+
+  <label for="apiBase">后端服务地址</label>
+  <input id="apiBase" placeholder="http://127.0.0.1:8000" />
+
+  <div class="row">
+    <button class="primary" id="saveBtn">保存</button>
+    <button id="testBtn">测试连接</button>
+    <button id="statsBtn">查看统计</button>
+  </div>
+
+  <div id="msg"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

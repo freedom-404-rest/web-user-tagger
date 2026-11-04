@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>数据统计 · 网页用户备注助手</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f8fafc; color: #1e293b;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+  .card .label { color: #64748b; font-size: 12px; }
+  .card .value { font-size: 26px; font-weight: 700; margin-top: 6px; color: #4f46e5; }
+  .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .panel h2 { font-size: 14px; margin: 0 0 12px; }
+  canvas { width: 100%; height: 320px; display: block; }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: #475569; margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+  th { color: #64748b; font-weight: 500; }
+  .muted { color: #64748b; font-size: 12px; }
+  @media (max-width: 720px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <h1>网页用户备注助手 · 数据统计</h1>
+  <div class="sub">数据来源：本地 SQLite（backend/data/zhihu-tagger.db）· 每 30 秒自动刷新</div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="panel">
+    <h2>每日新增走势（最近 30 天）</h2>
+    <canvas id="chart"></canvas>
+    <div class="legend">
+      <span><i style="background:#4f46e5"></i>新增用户</span>
+      <span><i style="background:#059669"></i>新增备注</span>
+      <span><i style="background:#f59e0b"></i>新增关联</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>来源</h2>
+    <table>
+      <thead><tr><th>知乎用户</th><th>设备标识</th><th>用户数</th></tr></thead>
+      <tbody id="sources"></tbody>
+    </table>
+    <p class="muted">说明：知乎用户来自页面登录态解析，设备标识用于区分浏览器；两者都只作为来源参考，无法识别真人身份。</p>
+  </div>
+
+<script>
+const DAYS = 30;
+const MAX_SOURCES = 20;
+
+async function load() {
+  try {
+    const res = await fetch('/api/stats?days=' + DAYS);
+    const data = await res.json();
+    renderCards(data.totals);
+    drawChart(data.daily);
+    renderSources(data.sources || []);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function renderCards(t) {
+  const items = [
+    { label: '用户量', value: t.users },
+    { label: '备注量', value: t.labels },
+    { label: '用户备注关联', value: t.userLabels },
+    { label: '平均每位用户备注数', value: t.avgLabelsPerUser },
+  ];
+  document.getElementById('cards').innerHTML = items.map((i) =>
+    '<div class="card"><div class="label">' + i.label + '</div><div class="value">' + i.value + '</div></div>'
+  ).join('');
+}
+
+function drawChart(daily) {
+  const canvas = document.getElementById('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 900;
+  const cssH = canvas.clientHeight || 320;
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const pad = { top: 16, right: 16, bottom: 28, left: 36 };
+  const w = cssW - pad.left - pad.right;
+  const h = cssH - pad.top - pad.bottom;
+  const n = daily.length;
+  const maxVal = Math.max(1, ...daily.map((d) => Math.max(d.newUsers, d.newLabels, d.newUserLinks)));
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px sans-serif';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (h * i) / 4;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + w, y);
+    ctx.stroke();
+    const val = Math.round(maxVal * (1 - i / 4));
+    ctx.fillText(String(val), 6, y + 4);
+  }
+
+  const xAt = (i) => pad.left + (n <= 1 ? 0 : (w * i) / (n - 1));
+  const yAt = (v) => pad.top + h - (h * v) / maxVal;
+
+  for (let i = 0; i < n; i += Math.ceil(n / 6)) {
+    const label = daily[i].date.slice(5);
+    const x = xAt(i);
+    ctx.fillText(label, x - 12, pad.top + h + 18);
+  }
+
+  const series = [
+    { key: 'newUsers', color: '#4f46e5' },
+    { key: 'newLabels', color: '#059669' },
+    { key: 'newUserLinks', color: '#f59e0b' },
+  ];
+
+  series.forEach((s) => {
+    ctx.beginPath();
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2;
+    daily.forEach((d, i) => {
+      const x = xAt(i);
+      const y = yAt(d[s.key] || 0);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = s.color;
+    daily.forEach((d, i) => {
+      if (d[s.key] > 0) {
+        ctx.beginPath();
+        ctx.arc(xAt(i), yAt(d[s.key]), 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  });
+}
+
+function renderSources(sources) {
+  const tbody = document.getElementById('sources');
+  if (!sources.length) {
+    tbody.innerHTML = '<tr><td colspan="3" class="muted">暂无数据</td></tr>';
+    return;
+  }
+
+  const shown = sources.slice(0, MAX_SOURCES);
+  let html = shown.map(function (s) {
+    var zhihu = s.zhihuUserId ? escapeHtml(s.zhihuUserId) : '<span class="muted">(未知)</span>';
+    var device = s.device ? escapeHtml(s.device) : '<span class="muted">(未知)</span>';
+    return '<tr><td>' + zhihu + '</td><td>' + device + '</td><td>' + s.count + '</td></tr>';
+  }).join('');
+
+  if (sources.length > MAX_SOURCES) {
+    html += '<tr><td colspan="3" class="muted">共 ' + sources.length + ' 条，仅展示前 ' + MAX_SOURCES + ' 条</td></tr>';
+  }
+
+  tbody.innerHTML = html;
+}
+
+function escapeHtml(v) {
+  return String(v).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+load();
+setInterval(load, 30000);
+window.addEventListener('resize', function () {
+  fetch('/api/stats?days=' + DAYS).then((r) => r.json()).then((d) => drawChart(d.daily));
+});
+</script>
+</body>
+</html>

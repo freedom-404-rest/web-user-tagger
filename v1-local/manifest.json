@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "网页用户备注助手（本地版）",
+  "version": "0.1.0",
+  "description": "为网页中的用户添加自定义备注并自动渲染，适用于知乎等网站。非官方产品，数据仅保存在本地。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "https://*.zhihu.com/*",
+    "http://*.zhihu.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.zhihu.com/*",
+        "http://*.zhihu.com/*"
+      ],
+      "js": [
+        "storage.js",
+        "selectors.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "网页用户标签助手",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

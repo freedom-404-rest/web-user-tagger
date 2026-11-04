@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>网页用户备注助手 v2</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      width: 340px;
+      margin: 0;
+      padding: 12px 14px;
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+    h1 {
+      font-size: 15px;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 img { width: 18px; height: 18px; }
+    h1 .tag {
+      font-size: 10px;
+      font-weight: 400;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 8px;
+      padding: 1px 6px;
+    }
+    label {
+      display: block;
+      margin: 8px 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    input {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--text);
+    }
+    input:focus { outline: none; border-color: var(--blue); }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .color-row label { margin: 0; }
+    #colorCheck { width: auto; margin-right: 2px; }
+    #colorInput { width: 44px; height: 30px; padding: 2px; margin-left: auto; }
+    button#saveBtn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 8px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button#saveBtn:hover { opacity: 0.92; }
+    #msg { margin-top: 8px; font-size: 12px; min-height: 16px; }
+    #msg.ok { color: #15803d; }
+    #msg.error { color: #b91c1c; }
+    .divider { border-top: 1px solid var(--border); margin: 12px 0 8px; }
+    #userListTitle { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    ul#userList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    ul#userList li {
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    ul#userList li:hover { background: #e2e8f0; }
+    ul#userList li.empty { cursor: default; color: var(--muted); padding-left: 4px; }
+    ul#userList li.select-title {
+      cursor: default;
+      font-weight: 600;
+      color: var(--blue);
+      white-space: normal;
+    }
+    ul#userList li button {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    ul#userList li button:hover { border-color: var(--blue); color: var(--blue); }
+
+    .tag-picker { position: relative; }
+    .tag-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #e8f0fe;
+      color: #1a56db;
+      border: 1px solid #c7d7fb;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+    .tag-chip .remove { cursor: pointer; font-weight: 700; line-height: 1; }
+    .tag-chip .remove:hover { color: #b91c1c; }
+    .tag-dropdown {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 20;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+    }
+    .tag-dropdown.hidden { display: none; }
+    .tag-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .tag-option:hover { background: #f1f5f9; }
+    .tag-option.selected { color: var(--blue); font-weight: 600; }
+    .tag-option .check { color: var(--blue); }
+    .tag-option.create { color: #15803d; }
+    .tag-option.more { color: #94a3b8; cursor: default; }
+
+    .io-row { display: flex; gap: 8px; margin-top: 10px; }
+    .io-row button {
+      flex: 1;
+      padding: 7px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .io-row button:hover { border-color: var(--blue); color: var(--blue); }
+
+    .api-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .api-line a { color: var(--blue); cursor: pointer; text-decoration: none; }
+    .api-links { display: inline-flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h1><img src="icons/icon48.png" alt="图标">网页用户备注助手 <span class="tag">v2</span></h1>
+
+  <label for="userInput">用户（主页链接 / urlToken / 昵称）</label>
+  <input id="userInput" placeholder="如 https://www.zhihu.com/people/xxx" />
+
+  <label>用户备注（搜索选择 / 回车新增）</label>
+  <div class="tag-picker">
+    <div class="tag-chips" id="selectedChips"></div>
+    <input id="tagSearch" placeholder="搜索备注，或输入新备注后回车" autocomplete="off" />
+    <div class="tag-dropdown hidden" id="tagDropdown"></div>
+  </div>
+
+  <div class="color-row">
+    <input type="checkbox" id="colorCheck" />
+    <label for="colorCheck">自定义备注颜色</label>
+    <input type="color" id="colorInput" value="#2563eb" disabled />
+  </div>
+
+  <button id="saveBtn">保存备注</button>
+  <div id="msg"></div>
+
+  <div class="io-row">
+    <button id="exportBtn">⬇ 导出数据</button>
+    <button id="importBtn">⬆ 导入数据</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden />
+  </div>
+
+  <div class="api-line">
+    <span id="apiText">后端：读取中…</span>
+    <span class="api-links">
+      <a id="openStats">统计</a>
+      <a id="openOptions">设置</a>
+    </span>
+  </div>
+
+  <div class="divider"></div>
+  <div id="userListTitle">当前页面用户（点击填入）</div>
+  <ul id="userList"><li class="empty">正在读取…</li></ul>
+
+  <script src="popup.js"></script>
+</body>
+</html>
