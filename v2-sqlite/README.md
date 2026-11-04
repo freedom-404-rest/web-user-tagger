@@ -24,7 +24,7 @@
               ▼
 ┌───────────────────────────┐
 │ SQLite 数据库               │
-│ backend/data/zhihu-tagger.db│
+│ backend/data/web-user-tagger.db│
 │ ← DB Browser / DBeaver 可开 │
 └───────────────────────────┘
 ```
@@ -52,7 +52,7 @@ python app.py
 
 ```
 网页用户标签助手后端已启动: http://127.0.0.1:8000
-数据库文件: .../backend/data/zhihu-tagger.db
+数据库文件: .../backend/data/web-user-tagger.db
 ```
 
 > 首次启动会自动创建数据库和表结构。
@@ -76,7 +76,7 @@ python app.py
 
 ## 数据库管理
 
-**数据库文件**：`backend/data/zhihu-tagger.db`
+**数据库文件**：`backend/data/web-user-tagger.db`
 
 用 [DB Browser for SQLite](https://sqlitebrowser.org/) 或 DBeaver 直接打开即可增删改查。
 
@@ -167,7 +167,7 @@ zhihu-tagger-v2/
 │   ├── app.py              # 后端服务（标准库 http.server + sqlite3）
 │   ├── schema.sql          # 表结构
 │   ├── requirements.txt    # 零依赖说明
-│   └── data/               # 运行时生成 zhihu-tagger.db
+│   └── data/               # 运行时生成 web-user-tagger.db
 ├── extension/
 │   ├── manifest.json
 │   ├── background.js       # 定时同步后端
@@ -194,5 +194,5 @@ zhihu-tagger-v2/
   python app.py
   ```
   （扩展的 `host_permissions` 已覆盖本机任意端口；如果换到其他主机，需在 manifest 中补上对应 host）
-- 数据库是普通 SQLite 文件，**备份直接复制 `zhihu-tagger.db` 即可**
+- 数据库是普通 SQLite 文件，**备份直接复制 `web-user-tagger.db` 即可**
 - 扩展与 v1 可以同时安装（名称、ID 不同），互不影响

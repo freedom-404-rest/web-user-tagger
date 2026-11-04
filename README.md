@@ -81,7 +81,7 @@ python app.py
 
 ```
 网页用户备注助手后端已启动: http://127.0.0.1:8000
-数据库文件: .../backend/data/zhihu-tagger.db
+数据库文件: .../backend/data/web-user-tagger.db
 ```
 
 **2. 加载扩展**
@@ -137,7 +137,7 @@ http://127.0.0.1:8000/stats
 
 ### v2
 
-SQLite 文件：`v2-sqlite/backend/data/zhihu-tagger.db`
+SQLite 文件：`v2-sqlite/backend/data/web-user-tagger.db`
 
 ```sql
 users        -- uid, url_token, name, color, created_at, updated_at, created_by, updated_by, zhihu_user_id
@@ -145,7 +145,7 @@ labels       -- id, name, color, created_at, created_by, zhihu_user_id
 user_labels  -- uid, label_id, created_at, created_by, zhihu_user_id
 ```
 
-- 备份：直接复制 `zhihu-tagger.db`
+- 备份：直接复制 `web-user-tagger.db`
 - 管理：DB Browser for SQLite / DBeaver
 - 修改后扩展会在 1 分钟内自动同步
 

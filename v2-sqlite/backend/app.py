@@ -27,7 +27,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
-DB_PATH = os.path.join(DATA_DIR, 'zhihu-tagger.db')
+DB_PATH = os.path.join(DATA_DIR, 'web-user-tagger.db')
+OLD_DB_PATH = os.path.join(DATA_DIR, 'zhihu-tagger.db')
 SCHEMA_PATH = os.path.join(BASE_DIR, 'schema.sql')
 STATS_PATH = os.path.join(BASE_DIR, 'stats.html')
 
@@ -43,8 +44,18 @@ def get_conn():
     return conn
 
 
+def migrate_db_filename():
+    """旧数据库文件名 zhihu-tagger.db -> web-user-tagger.db（保留数据）。"""
+    if os.path.exists(OLD_DB_PATH) and not os.path.exists(DB_PATH):
+        for suffix in ('', '-wal', '-shm'):
+            old = OLD_DB_PATH + suffix
+            if os.path.exists(old):
+                os.replace(old, DB_PATH + suffix)
+
+
 def init_db():
     os.makedirs(DATA_DIR, exist_ok=True)
+    migrate_db_filename()
     with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
         schema = f.read()
     conn = get_conn()
