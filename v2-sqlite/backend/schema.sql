@@ -1,5 +1,5 @@
 -- 网页用户备注助手 v2（SQLite）
--- 可直接用 DB Browser for SQLite / DBeaver 打开 data/zhihu-tagger.db 管理
+-- 可直接用 DB Browser for SQLite / DBeaver 打开 data/web-user-tagger.db 管理
 -- 索引在 app.py 的 migrate() 中创建，兼容旧库升级
 
 PRAGMA foreign_keys = ON;

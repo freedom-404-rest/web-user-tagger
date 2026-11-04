@@ -4,7 +4,7 @@
 
 启动：
     python app.py
-默认监听 http://127.0.0.1:8000，数据库文件 data/zhihu-tagger.db
+默认监听 http://127.0.0.1:8000，数据库文件 data/web-user-tagger.db
 
 接口：
     GET    /api/health              健康检查
