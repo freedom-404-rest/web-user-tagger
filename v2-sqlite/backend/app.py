@@ -154,9 +154,11 @@ def migrate(conn):
     # 移除已废弃的 zhihu_user_name 字段
     conn.commit()
     conn.execute('PRAGMA foreign_keys = OFF')
+    conn.execute('PRAGMA legacy_alter_table = ON')
     drop_column_if_exists(conn, 'user_labels', 'zhihu_user_name', USER_LABELS_TABLE_SQL, USER_LABELS_COLUMNS)
     drop_column_if_exists(conn, 'labels', 'zhihu_user_name', LABELS_TABLE_SQL, LABELS_COLUMNS)
     drop_column_if_exists(conn, 'users', 'zhihu_user_name', USERS_TABLE_SQL, USERS_COLUMNS)
+    conn.execute('PRAGMA legacy_alter_table = OFF')
     conn.execute('PRAGMA foreign_keys = ON')
 
     conn.execute('CREATE INDEX IF NOT EXISTS idx_users_url_token ON users(url_token)')
